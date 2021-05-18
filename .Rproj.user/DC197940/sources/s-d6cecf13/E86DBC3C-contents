@@ -7,6 +7,7 @@ library(shiny)
 library(bslib)
 library(knitr)
 
+
 bs_global_theme()
 
 bs_global_add_variables(
@@ -17,7 +18,7 @@ bs_global_add_variables(
 
 # Define UI for application that draws a histogram ------------------------
 
-ui <- fluidPage(bootstrap(),
+ui <- fluidPage(bs_theme_dependencies(theme=bs_global_theme()),
                 
                 
                 # Header
@@ -90,34 +91,34 @@ server <- function(input, output, session) {
   observeEvent(input$runMod, {
     
     # instantiate a data frame to store data
-    trials <- data.frame(1:input$num)
+    flips <- data.frame(1:input$num)
     
-    withProgress(message = "Running trials", value = 0, {
+    withProgress(message = "Running.", value = 0, {
       
-      for (i in 1:nrow(trials)) {
+      for (i in 1:nrow(flips)) {
         
-        rslt <- data.frame(matrix(sample(c(0, 1), nrow(trials), replace = TRUE, prob = c(.5, .5)), ncol = 1))
-        rslt <- cbind(rslt, trials)
-        colnames(rslt) <- c("Heads", "Trial")
+        rslt <- data.frame(matrix(sample(c(0, 1), nrow(flips), replace = TRUE, prob = c(.5, .5)), ncol = 1))
+        rslt <- cbind(rslt, flips)
+        colnames(rslt) <- c("Heads", "Flips")
         
         rslt[, "Cum_Heads"] <- cumsum(rslt$Heads)
         
-        rslt[, "ratio"] <- rslt$Cum_Heads / rslt$Trial
+        rslt[, "ratio"] <- rslt$Cum_Heads / rslt$Flips
         
         # Increment the progress bar, and update the detail text.
-        incProgress(amount = 1 / input$num, detail = paste("Doing coin flip", i))
+        incProgress(amount = 1 / input$num, detail = paste("Flipping coin...", i))
       }
     })
     
     output$distPlot <- renderPlot({
       
-      plot(rslt$Trial, rslt$ratio,
+      plot(rslt$Flips, rslt$ratio,
            type = "b", pch = 19,
            col = "#008080", 
            xlab = "Number of simulated coin flips", ylab = "y", 
            main = "Number of coin flips vs. ratio Heads",
       )
-      abline(h = mean(), col = "blue")
+      abline(h = mean(), col = "orange")
     })
   })
 }
