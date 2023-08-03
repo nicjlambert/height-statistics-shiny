@@ -1,5 +1,4 @@
 #' @title: "Law of Large Numbers Simulation"
-#' n.j.lambert
 #' 
 #'This is a Shiny web application that demonstrates the concept of the law of large 
 #'numbers. The law of large numbers states that as the number of trials in a 
@@ -14,7 +13,7 @@
 #'value for the ratio of heads in a fair coin flip is 0.5, which is indicated by 
 #'the mean line.
 
-# Package Management ------------------------------------------------------
+# Package Management ----
 
 install_package <- function(package) {
   if (!require(package, character.only = TRUE)) {
@@ -26,52 +25,61 @@ install_package <- function(package) {
 install_package("shiny") # build interactive web applications with R
 install_package("bslib")
 
-# UI Definition -----------------------------------------------------------
+# UI Definition ----
 
-bs_global_theme()
-bs_global_add_variables(primary = "orange", secondary = "teal")
+sidebar_UI <- function() {
+  sidebarPanel(
+    h3("Simulation Control Panel"),
+    helpText("This application demonstrates the Law of Large Numbers using a fair coin flip simulation. To begin:",
+             tags$ul(
+               tags$li("Select the number of simulations to run"),
+               tags$li("Choose whether to display the expected mean line"),
+               tags$li("Click 'Run Simulation' to start")
+             )),
+    numericInput("num", "Number of Simulations:", 1, min = 1),
+    checkboxInput("mean.line", "Display Mean Line (0.5)", TRUE),
+    actionButton("runMod", "Run Simulation")
+  )
+}
 
-ui <- fluidPage(bs_theme_dependencies(theme = bs_global_theme()),
-                titlePanel("Law of Large Numbers"),
-                sidebarLayout(
-                  sidebarPanel(
-                    h3("Instructions"),
-                    helpText("Click 'Run Model' after changing parameters"),
-                    actionButton("runMod", "Run Model"),
-                    h4("Initial Conditions"),
-                    numericInput("num", "n Simulations", 1)
-                  ),
-                  mainPanel(
-                    tabsetPanel(
-                      tabPanel("Plot",
-                               h4("Simulation Results"),
-                               plotOutput("distPlot", height = "500px"),
-                               wellPanel(
-                                 h4("Graphical Parameters"),
-                                 fluidRow(
-                                   column(3, checkboxInput("mean.line", "Mean Line", TRUE))
-                                 )
-                               )
-                      ),
-                      tabPanel("About",
-                               p("Simulates a fair coin flip to illustrate the law of large numbers."),
-                               a("Law of large numbers (Wikipedia)", href = "https://en.wikipedia.org/wiki/Law_of_large_numbers"),
-                               br(), br(),
-                               strong("Author"),
-                               a("N J. Lambert", href = "https://github.com/nicjlambert")
-                      )
-                    )
-                  )
-                )
+main_UI <- function() {
+  mainPanel(
+    tabsetPanel(
+      tabPanel("Simulation Plot",
+               h4("Simulation Results"),
+               plotOutput("distPlot", height = "500px")
+      ),
+      tabPanel("About",
+               h3("About the Simulation"),
+               p("The Law of Large Numbers states that as the number of trials in a probability experiment increases, 
+                 the experimental probability tends towards the theoretical probability. In this simulation, we demonstrate this concept 
+                 using the example of a fair coin flip, which has a theoretical probability of 0.5 for both 'Heads' and 'Tails'. 
+                 As the number of flips increases, the ratio of 'Heads' to total flips will converge towards 0.5."),
+               br(),
+               h4("References and More Information"),
+               a("Law of large numbers (Wikipedia)", href = "https://en.wikipedia.org/wiki/Law_of_large_numbers"),
+               br(), br(),
+               h4("Author"),
+               a("N J. Lambert", href = "https://github.com/nicjlambert")
+      )
+    )
+  )
+}
+
+ui <- fluidPage(
+  bs_theme_dependencies(theme = bs_global_theme()),
+  titlePanel("Fair Coin Flip: A Law of Large Numbers Simulation"),
+  sidebarLayout(sidebar_UI(), main_UI())
 )
 
-# Server Definition -------------------------------------------------------
+# Server Definition ----
 
 server <- function(input, output) {
+ 
   mean <- reactive({
     if (input$mean.line) 0.5
   })
-  
+
   observeEvent(input$runMod, {
     flips <- data.frame(1:input$num)
     for (i in 1:nrow(flips)) {
@@ -86,6 +94,7 @@ server <- function(input, output) {
       abline(h = mean(), col = "orange")
     })
   })
+
 }
 
 shinyApp(ui, server)
